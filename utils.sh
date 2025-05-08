@@ -178,6 +178,7 @@ set_monitors()
     laptop_output=$(get_monitor_names laptop)
     secondary_output=$(get_monitor_names secondary)
     
+    xrandr --output $laptop_output --auto 2> /dev/null
     xrandr --output $secondary_output --auto 2> /dev/null # Switch monitor on if it is switched off
     setcustomres -w 1600 -h 900 -o $laptop_output # Primary Screen
     setcustomres -w 1920 -h 1080 -o $secondary_output -p "--right-of $laptop_output" # Secondary Screen
