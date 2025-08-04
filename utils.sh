@@ -21,7 +21,7 @@ help()
     echo -e "${magenta}-p -pid-command${reset} <pid(s)> <command>"
     echo -e "       Run a command after a process exits"
     echo -e "${magenta}-d -davinci-convert${reset} <file> [audio|video]"
-    echo -e "       Extract audio to MP3 OR convert Resolve output to MP4 [specify output]"
+    echo -e "       DaVinci Resolve related rendering operations"
     echo -e "${magenta}-u -update-system${reset} [mirror]"
     echo -e "       yay -Syyu & bypass 'sudo session' timeout [update mirror list]"
     echo -e "${magenta}-y -yay${reset}"
@@ -334,7 +334,7 @@ davinci_convert()
     inputfile=$1
     action=$2
 
-    if [[ $(echo $inputfile | cut -d '.' -f 2) = "mp4" || "$action" = "audio" ]]; then
+    if [[ "$action" = "audio" ]]; then
         outputfile="$(echo $inputfile | cut -d '.' -f 1).mp3"
 
         print_message "Extracting audio out of '$inputfile'"
@@ -342,7 +342,7 @@ davinci_convert()
         ffmpeg -i "$inputfile" "$outputfile" && ns "Audio extraction completed" "Extracted $outputfile from $inputfile"
 
         print_message "Audio extraction of '$inputfile' completed"
-    elif [[ ! $(echo $inputfile | cut -d '.' -f 2) = "mp4" || "$action" = "video" ]]; then
+    elif [[ ! $(echo $inputfile | cut -d '.' -f 2) = "mov" || "$action" = "video" ]]; then
         outputfile="$(echo $inputfile | cut -d '.' -f 1).mp4"
 
         print_message "Converting '$inputfile' into '$outputfile'"
@@ -351,11 +351,17 @@ davinci_convert()
         print_message "Converted '$inputfile' into '$outputfile'"
         
         # del=$()  "Would you like to delete ${inputfile}?"  -A "del"="Delete Permanently" 
-        ns "Converted '$inputfile' to '$outputfile'"-i "emblem-rabbitvcs-modified" 
+        ns "Converted '$inputfile' to '$outputfile'" -i "emblem-rabbitvcs-modified"
         # if [[ $del ]]; then
         #     rm -f "$inputfile"
         #     print_warning "Deleted '$inputfile'"
         # fi
+    elif [[ $(echo $inputfile | cut -d '.' -f 2) = "mp4" ]]; then
+        outputfile="$(echo $inputfile | cut -d '.' -f 1).mov"
+
+        ffmpeg -i $inputfile -c:v dnxhd -profile:v dnxhr_sq -pix_fmt yuv422p -c:a pcm_s16le -threads 0 $outputfile
+
+        ns "Converted '$inputfile' to '$outputfile'" -i "emblem-rabbitvcs-modified"
     fi
 }
 
